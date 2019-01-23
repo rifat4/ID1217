@@ -1,0 +1,23 @@
+Two types of synchronization:
+
+-Mutual exclusion // Guarantees that only onne process at a time accesses a shared resource, ie only process at a time has access to a variable
+-Conditional sync // 
+
+
+The Await Statement
+Wait for (B) to be true, then execute S atomically
+Combines cond sync with mut ex
+B is guaranteed to hold when S begins
+S is guarantees to terminate
+
+need to unlock B (critical reference).
+thread that needs to change B, needs to signal. (if not locks).
+
+//google true dependence
+//google anti dependence
+//output/input dependence
+
+Online server power available to students:
+avril.sys.ict.kth.se
+
+memory should behave like atomic registers. (because of read read)?

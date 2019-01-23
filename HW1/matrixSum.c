@@ -101,9 +101,13 @@ int main(int argc, char *argv[]) {
 
   /* do the parallel work: create the workers */
   start_time = read_timer();
+  //change this to dynamic thread creation, until workload has been completed.
+  //One thread per workload, 1 workload = 1 strip, 1strip = [i][1.....n].
+  //Learn how to avoid unecessesary sync.
+  //use mutex/locks/cond variabless for atomic action? <statement> = atomic (notation)
   for (l = 0; l < numWorkers; l++)
     pthread_create(&workerid[l], &attr, Worker, (void *) l);
-  pthread_exit(NULL);
+  pthread_exit(NULL); //change for join
 }
 
 /* Each worker sums the values in one strip of the matrix.
@@ -137,4 +141,5 @@ void *Worker(void *arg) {
     printf("The total is %d\n", total);
     printf("The execution time is %g sec\n", end_time - start_time);
   }
+
 }
