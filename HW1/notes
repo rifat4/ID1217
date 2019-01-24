@@ -21,3 +21,38 @@ Online server power available to students:
 avril.sys.ict.kth.se
 
 memory should behave like atomic registers. (because of read read)?
+
+co i = 0 to n-1
+	if (a[i] > m)
+		<if(a[i] > m) m = a[i];>
+oc
+
+Lesson Learned,
+Synchronization is required whenever processes read and write shared variables
+(to preserve true, anti, and output dependences).
+Mutex to help reach atomiicity.
+
+var x = 1, y = 2, z = 3;
+co
+	x= x +1;
+	y = y + 2;
+	z = x + y;
+	<await (x > 1) x = 0; y = 0; z = 0;>
+oc
+
+possible to get y = 4, because of no syncronization
+since, y = y + 2 statement isnt atomic, y can be reset in memory after being read from memory
+z can be any value between 0 and 6 because of same reasons
+
+Assertional reasoning
+
+; <--- means sequential execution.
+S1; S2;
+S1 is executed before S2
+
+mutex i and i++;
+mutex max min; 
+mutex 
+
+//google predicated discribed something
+//google strongly-fair and weekly-fair schedulers
