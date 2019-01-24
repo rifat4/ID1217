@@ -26,12 +26,13 @@ pthread_mutex_t barrier;  /* mutex lock for the barrier */
 pthread_cond_t go;        /* condition variable for leaving */
 int numWorkers;           /* number of workers */ 
 int numArrived = 0;       /* number who have arrived */
-int count = 0;            /* used for bag of tasks */
+int counter = 0;            /* used for bag of tasks */
 int realTotal = 0;
 int realMin = INT_MAX;
 int realMax = INT_MIN;
-pthread_mutex_t minMax;
-pthread_mutex_t counter;  //TODO
+pthread_mutex_t maxLock;
+pthread_mutex_t minLock;
+pthread_mutex_t counterLock;  //TODO
 pthread_mutex_t sumLock;
 
 /* a reusable counter barrier */
@@ -86,10 +87,13 @@ int main(int argc, char *argv[]) {
   pthread_cond_init(&go, NULL);
 
   /* initialize minmax, counter and sumLock variable mutex*/
-  if(pthread_mutex_init(&minMax, NULL) != 0){
+  if(pthread_mutex_init(&maxLock, NULL) != 0){
 	printf("\nfailed to initialize minmax mutex\n");
   }
-  if(pthread_mutex_init(&counter, NULL) != 0){
+  if(pthread_mutex_init(&minLock, NULL) != 0){
+	printf("\nfailed to initialize minmax mutex\n");
+  }
+  if(pthread_mutex_init(&counterLock, NULL) != 0){
 	printf("\nfailed to initialize counter mutex\n");
   }
   if(pthread_mutex_init(&sumLock, NULL) != 0){
@@ -165,13 +169,11 @@ void *Worker(void *arg) {
   /* determine first and last rows of my strip */
   first = myid*stripSize;
   last = (myid == numWorkers - 1) ? (size - 1) : (first + stripSize - 1);
-	//malloc two array with size of 10 and store maximum and minimum values 
-	//like we do with sum
-	//read bag of tasks
   /* sum values in my strip */
   int total = 0;
   int max = INT_MIN;
   int min = INT_MAX;
+	
   	for (i = first; i <= last; i++){
     	for (j = 0; j < size; j++){
       		total += matrix[i][j];
@@ -181,10 +183,18 @@ void *Worker(void *arg) {
 	}
 
 	pthread_mutex_lock(&sumLock);
-	if(max > realMax)realMax = max;
-	if(min < realMin)realMin = min;
-
 	realTotal = realTotal + total;
-	
 	pthread_mutex_unlock(&sumLock);
+
+	if(max > realMax){
+		pthread_mutex_lock(&maxLock);
+		if(max > realMax)realMax = max;
+		pthread_mutex_unlock(&maxLock);
+	}
+	if(min < realMin){
+		pthread_mutex_lock(&minLock);
+		if(min < realMin)realMin = min;
+		pthread_mutex_unlock(&minLock);
+	}
+
 }

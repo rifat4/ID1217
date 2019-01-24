@@ -56,3 +56,28 @@ mutex
 
 //google predicated discribed something
 //google strongly-fair and weekly-fair schedulers
+
+Ammount of locks has a tradeoff, several locks can endup in deadlock.
+Very few locks can end up in decreased parallellization <- hmmmmmmmmmmmmmmmmmmmmm.
+
+//google spin locks
+types of spinlocks
+	unfair locks:
+		fast as fucboi
+		unfair as fucboi
+		good in low contention ie small number of competing processes
+
+	fifi lock:
+		first in first out, fairly cheap i think or something
+
+	spin lock:
+		give someone passage, and spin the "queue"
+		should be used in low contention because of how it works on a software&hardware level
+
+	test&set lock:
+		on a hardware level it is similar to spinlock, but you have them daisy chained?
+
+critical section solved by hardware design:
+	added atomic instructions for read write
+
+//google gdb (used for debugging c code)
