@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
   for (i = 0; i < size; i++) {
 	  for (j = 0; j < size; j++) {
          //matrix[i][j] = 1;
-         matrix [i][j] = rand();//%99;
+         matrix [i][j] = rand() % 99;//%99;
 	  }
   }
 
@@ -170,31 +170,37 @@ void *Worker(void *arg) {
   first = myid*stripSize;
   last = (myid == numWorkers - 1) ? (size - 1) : (first + stripSize - 1);
   /* sum values in my strip */
-  int total = 0;
   int max = INT_MIN;
   int min = INT_MAX;
-	
-  	for (i = first; i <= last; i++){
-    	for (j = 0; j < size; j++){
-      		total += matrix[i][j];
-      		if(max < matrix[i][j])max = matrix[i][j];
-      		if(min > matrix[i][j])min = matrix[i][j];
+	while(true){
+		int localCounter;
+		int total = 0;
+		pthread_mutex_lock(&counterLock);
+		localCounter = counter++;
+		pthread_mutex_unlock(&counterLock);
+		if(counter > size)return 0;
+		printf("counter: %d\n", localCounter);
+
+
+	    for (j = 0; j < size; j++){
+	    	total += matrix[localCounter][j];
+	    	if(max < matrix[localCounter][j])max = matrix[localCounter][j];
+	  		if(min > matrix[localCounter][j])min = matrix[localCounter][j];
       	}
-	}
 
-	pthread_mutex_lock(&sumLock);
-	realTotal = realTotal + total;
-	pthread_mutex_unlock(&sumLock);
+		pthread_mutex_lock(&sumLock);
+		realTotal = realTotal + total;
+		pthread_mutex_unlock(&sumLock);
 
-	if(max > realMax){
-		pthread_mutex_lock(&maxLock);
-		if(max > realMax)realMax = max;
-		pthread_mutex_unlock(&maxLock);
+		if(max > realMax){
+			pthread_mutex_lock(&maxLock);
+			if(max > realMax)realMax = max;
+			pthread_mutex_unlock(&maxLock);
+		}
+		if(min < realMin){
+			pthread_mutex_lock(&minLock);
+			if(min < realMin)realMin = min;
+			pthread_mutex_unlock(&minLock);
+		}
 	}
-	if(min < realMin){
-		pthread_mutex_lock(&minLock);
-		if(min < realMin)realMin = min;
-		pthread_mutex_unlock(&minLock);
-	}
-
 }

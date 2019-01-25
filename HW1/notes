@@ -81,3 +81,5 @@ critical section solved by hardware design:
 	added atomic instructions for read write
 
 //google gdb (used for debugging c code)
+
+//google the bakery algorithm
