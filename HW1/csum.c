@@ -233,6 +233,6 @@ void *Worker(void *arg) {
 		//is reduced semi-logarithmically the more we use it. (worst case is linear)
 		//shouldn't be a issue in this program, but something to consider in the future
 		//adding the code for pos of min/max added about 70% more time
-		//should think about refactoring that.
+		//should think about refactoring that..
 	}
 }
