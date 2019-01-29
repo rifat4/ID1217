@@ -4,6 +4,7 @@
 #include <sys/time.h>
 #include <stdbool.h>
 #include <math.h>
+#define MAXWORKERS 10
 
 double read_timer() {
 	static bool initialized = false;

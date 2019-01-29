@@ -30,6 +30,7 @@ int counter = 0;            /* used for bag of tasks */
 int realTotal = 0;
 int realMin = INT_MAX;
 int realMax = INT_MIN;
+int realMinY, realMinX, realMaxY, realMaxX;
 pthread_mutex_t maxLock;
 pthread_mutex_t minLock;
 pthread_mutex_t counterLock;  //TODO
@@ -141,16 +142,18 @@ int main(int argc, char *argv[]) {
   	// unless we assume that thread 0 is the main thread.
     //max = maxValues[0];
     //min = minValues[0];
-    for (i = 0; i < numWorkers; i++){
+    //for (i = 0; i < numWorkers; i++){
       //	total += sums[i];
       //	if(max < maxValues[i])max = maxValues[i];
       //	if(min > minValues[i])min = minValues[i];
-      }
+    //  }
     /* get end time */
     end_time = read_timer();
     /* print results */
     printf("The minValue = %d\n", realMin);
+    printf("Found at position [%d, %d]\n", realMinX, realMinY);
     printf("The maxValue = %d\n", realMax);
+    printf("Found at position [%d, %d]\n", realMaxX, realMaxY);
     printf("The total is %d\n", realTotal);
     printf("The execution time is %g sec\n", end_time - start_time);
 
@@ -172,6 +175,8 @@ void *Worker(void *arg) {
   /* sum values in my strip */
   int max = INT_MIN;
   int min = INT_MAX;
+  int minX, minY;
+  int maxX, maxY;
 	while(true){
 		int localCounter;
 		int total = 0;
@@ -182,8 +187,16 @@ void *Worker(void *arg) {
 
 	    for (j = 0; j < size; j++){
 	    	total += matrix[localCounter][j];
-	    	if(max < matrix[localCounter][j])max = matrix[localCounter][j];
-	  		if(min > matrix[localCounter][j])min = matrix[localCounter][j];
+	    	if(max < matrix[localCounter][j]){
+	    		max = matrix[localCounter][j];
+				maxY = j;
+				maxX = localCounter;
+			}
+	  		if(min > matrix[localCounter][j]){
+	  			min = matrix[localCounter][j];
+				minY = j;
+				minX = localCounter;
+			}
       	}
 
 		/* This should possibly be guarded by one lock, because of reasons*/
@@ -193,12 +206,24 @@ void *Worker(void *arg) {
 
 		if(max > realMax){
 			pthread_mutex_lock(&maxLock);
-			if(max > realMax)realMax = max;
+			if(max > realMax){
+				//should really change this to a struct
+				printf("Writing over oldMax: %d, With NewMax: %d\n", realMax, max);
+				printf("Old pos: [%d, %d], new pos: [%d, %d]\n", realMaxX, realMaxY, maxX, maxY);
+				realMax = max;
+				realMaxX = maxX;
+				realMaxY = maxY;
+			}
 			pthread_mutex_unlock(&maxLock);
 		}
 		if(min < realMin){
 			pthread_mutex_lock(&minLock);
-			if(min < realMin)realMin = min;
+			if(min < realMin){
+				//should really change this to a struct
+				realMin = min;
+				realMinX = minX;
+				realMinY = minY;
+			}
 			pthread_mutex_unlock(&minLock);
 		}
 		/* This should possibly be guarded by one lock, because of reasons*/
@@ -207,5 +232,7 @@ void *Worker(void *arg) {
 		//overhead is minimal because of how the access rate of min and max lock 
 		//is reduced semi-logarithmically the more we use it. (worst case is linear)
 		//shouldn't be a issue in this program, but something to consider in the future
+		//adding the code for pos of min/max added about 70% more time
+		//should think about refactoring that.
 	}
 }
