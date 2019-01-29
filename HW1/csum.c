@@ -179,8 +179,6 @@ void *Worker(void *arg) {
 		localCounter = counter++;
 		pthread_mutex_unlock(&counterLock);
 		if(counter > size)return 0;
-		printf("counter: %d\n", localCounter);
-
 
 	    for (j = 0; j < size; j++){
 	    	total += matrix[localCounter][j];
@@ -188,6 +186,7 @@ void *Worker(void *arg) {
 	  		if(min > matrix[localCounter][j])min = matrix[localCounter][j];
       	}
 
+		/* This should possibly be guarded by one lock, because of reasons*/
 		pthread_mutex_lock(&sumLock);
 		realTotal = realTotal + total;
 		pthread_mutex_unlock(&sumLock);
@@ -202,5 +201,11 @@ void *Worker(void *arg) {
 			if(min < realMin)realMin = min;
 			pthread_mutex_unlock(&minLock);
 		}
+		/* This should possibly be guarded by one lock, because of reasons*/
+		//to reduce chance of deadlocks and overhead
+		//not really possible to get deadlock in this specific situation
+		//overhead is minimal because of how the access rate of min and max lock 
+		//is reduced semi-logarithmically the more we use it. (worst case is linear)
+		//shouldn't be a issue in this program, but something to consider in the future
 	}
 }
